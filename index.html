@@ -249,6 +249,10 @@
             <option value="rejected">Rejected</option>
           </select>
           <button class="btn-ghost btn-sm" onclick="loadAdminData()" id="refreshBtn">Refresh</button>
+
+<button class="btn-ghost btn-sm" onclick="previousPage()" id="prevBtn">← Previous</button>
+
+<button class="btn-ghost btn-sm" onclick="nextPage()" id="nextBtn">Next →</button>
         </div>
         <div class="count-pill" id="countPill"></div>
         <div class="table-scroll">
@@ -538,14 +542,14 @@ async function setStatus(id,status){
 
     }
 
+members = res.members || [];
 
-    members = res.members || [];
-
-    totalMembers = res.total || 0;
+totalMembers = res.total || 0;
 
 
-    renderMembers();
+renderMembers();
 
+updatePagination();
 
   }catch(e){
 
@@ -809,28 +813,106 @@ async function deleteMember(id,name){
 }
 /* ============ ADMIN: SETTINGS ============ */
 async function saveLink(){
+
   const msg = document.getElementById("linkMsg");
   const btn = document.getElementById("saveLinkBtn");
   const link = document.getElementById("waLink").value.trim();
-  if(!link){ msg.className = "msg msg-bad"; msg.textContent = "Enter a link first."; return; }
-  btn.disabled = true;
-  msg.className = "msg"; msg.textContent = "Saving…";
-  try{
-    const res = await callApi({ action:"saveWhatsappLink", key: adminKey, link });
-    if(res.success){
-      msg.className = "msg msg-good"; msg.textContent = "Group link saved.";
-      loadAdminData();
-    } else if(res.error === "unauthorized"){
-      msg.className = "msg msg-bad"; msg.textContent = "Your session expired. Please log in again.";
-      logout();
-    } else {
-      msg.className = "msg msg-bad"; msg.textContent = res.error || "Couldn't save link.";
-    }
-  }catch(e){
-    msg.className = "msg msg-bad"; msg.textContent = "Couldn't reach the server: " + e.message;
-  }finally{
-    btn.disabled = false;
+
+
+  if(!link){
+
+    msg.className = "msg msg-bad";
+    msg.textContent = "Enter a link first.";
+
+    return;
+
   }
+
+
+  btn.disabled = true;
+
+  msg.className = "msg";
+  msg.textContent = "Saving…";
+
+
+  try{
+
+
+    const res = await callApi({
+
+      action:"saveWhatsappLink",
+
+      key:adminKey,
+
+      link:link
+
+    });
+
+
+    if(res.success){
+
+
+      /* Update locally — no member reload */
+
+      groupLink = link;
+
+
+      const preview =
+        document.getElementById("linkPreview");
+
+
+      preview.textContent = link;
+
+      preview.classList.remove("empty-state");
+
+
+      msg.className = "msg msg-good";
+
+      msg.textContent =
+        "Group link saved.";
+
+
+    }else if(res.error === "unauthorized"){
+
+
+      msg.className = "msg msg-bad";
+
+      msg.textContent =
+        "Your session expired. Please log in again.";
+
+      logout();
+
+
+    }else{
+
+
+      msg.className = "msg msg-bad";
+
+      msg.textContent =
+        res.error || "Couldn't save link.";
+
+
+    }
+
+
+  }catch(e){
+
+
+    msg.className = "msg msg-bad";
+
+    msg.textContent =
+      "Couldn't reach the server: " + e.message;
+
+
+  }finally{
+
+
+    btn.disabled = false;
+
+
+  }
+
+}
 }
 async function changePassword(){
   const msg = document.getElementById("passMsg");
@@ -861,6 +943,59 @@ async function changePassword(){
   }finally{
     btn.disabled = false;
   }
+}
+  /* ============ PAGINATION ============ */
+
+function nextPage(){
+
+  if(currentPage * pageSize < totalMembers){
+
+    currentPage++;
+
+    loadAdminData();
+
+  }
+
+}
+
+
+function previousPage(){
+
+  if(currentPage > 1){
+
+    currentPage--;
+
+    loadAdminData();
+
+  }
+
+}
+
+
+function updatePagination(){
+
+  const prevBtn =
+    document.getElementById("prevBtn");
+
+  const nextBtn =
+    document.getElementById("nextBtn");
+
+
+  if(prevBtn){
+
+    prevBtn.disabled =
+      currentPage <= 1;
+
+  }
+
+
+  if(nextBtn){
+
+    nextBtn.disabled =
+      currentPage * pageSize >= totalMembers;
+
+  }
+
 }
 </script>
 </body>
