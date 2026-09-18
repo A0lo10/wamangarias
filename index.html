@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kawamangaria Family Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-950:#080d1f;
+    --navy-900:#0d1633;
+    --navy-800:#131e45;
+    --navy-700:#1a2a58;
+    --navy-600:#233872;
+    --line:#28376b;
+    --text:#e9edf9;
+    --text-dim:#93a1c9;
+    --text-faint:#5f6da0;
+    --gold:#d7a53f;
+    --gold-bright:#e8bd5f;
+    --good:#4fb480;
+    --good-bg:#12331f;
+    --warn:#d7a53f;
+    --warn-bg:#332b12;
+    --bad:#e2685f;
+    --bad-bg:#391718;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #16244f 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, #172552 0%, transparent 55%),
+      var(--navy-950);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif;color:var(--text);margin:0;letter-spacing:.2px;}
+  .wrap{max-width:960px;margin:0 auto;padding:36px 20px 80px;}
+
+  .top{padding:8px 4px 34px;border-bottom:1px solid var(--line);margin-bottom:34px;}
+  .top .mark{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .top .dot{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px rgba(215,165,63,.15);}
+  .top .kicker{color:var(--text-faint);font-size:13px;}
+  .top h1{font-size:30px;font-weight:600;}
+  .top p{color:var(--text-dim);margin-top:8px;font-size:15px;max-width:56ch;line-height:1.55;}
+
+  .card{
+    background:linear-gradient(180deg,var(--navy-800),var(--navy-900));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 26px 28px;
+    margin-bottom:22px;
+  }
+  .card h2{font-size:19px;font-weight:600;margin-bottom:4px;}
+  .card .sub{color:var(--text-dim);font-size:13.5px;margin-bottom:18px;line-height:1.5;}
+
+  label{display:block;font-size:12.5px;color:var(--text-dim);margin:0 0 6px 2px;}
+  .field{margin-bottom:14px;}
+  input,select{
+    width:100%;
+    background:var(--navy-950);
+    border:1px solid var(--navy-600);
+    color:var(--text);
+    padding:11px 13px;
+    border-radius:8px;
+    font-size:14.5px;
+    font-family:inherit;
+  }
+  input:focus,select:focus{outline:none;border-color:var(--gold);}
+  input::placeholder{color:var(--text-faint);}
+
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:2fr 1fr auto;gap:12px;align-items:end;}
+  @media(max-width:560px){.row2{grid-template-columns:1fr;} .row3{grid-template-columns:1fr;}}
+
+  button{
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    padding:11px 18px;
+    border-radius:8px;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .06s ease, filter .15s ease;
+  }
+  button:active{transform:translateY(1px);}
+  button:disabled{opacity:.55;cursor:default;}
+  .btn-primary{background:var(--gold);color:#1c1404;}
+  .btn-primary:hover{filter:brightness(1.08);}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--navy-600);}
+  .btn-ghost:hover{border-color:var(--gold);}
+  .btn-sm{padding:7px 11px;font-size:12.5px;border-radius:6px;}
+  .btn-wa{background:#1f9e57;color:#fff;}
+  .btn-danger{background:transparent;color:var(--bad);border-color:#5c2b2b;}
+  .btn-danger:hover{background:var(--bad-bg);}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+
+  .status-box{margin-top:16px;padding:16px;border-radius:8px;font-size:14.5px;line-height:1.6;}
+  .status-bad{background:var(--bad-bg);border:1px solid #5c2b2b;color:#f3b6b1;}
+  .status-pending{background:var(--warn-bg);border:1px solid #5c4a1a;color:#f0d495;}
+  .status-ok{background:var(--good-bg);border:1px solid #245c3c;color:#a9e6c4;}
+  .status-ok .join-btn{margin-top:12px;}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+  .badge-approved{background:var(--good-bg);color:#a9e6c4;}
+  .badge-pending{background:var(--warn-bg);color:#f0d495;}
+  .badge-rejected{background:var(--bad-bg);color:#f3b6b1;}
+
+  #adminZone{display:none;}
+  #loginCard.hidden{display:none;}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap;}
+  .tab{padding:10px 4px;margin-right:22px;color:var(--text-faint);font-size:14px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;background:none;border-radius:0;}
+  .tab.active{color:var(--gold-bright);border-bottom-color:var(--gold);}
+  .tabpanel{display:none;}
+  .tabpanel.active{display:block;}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .toolbar .search{flex:1;min-width:180px;}
+  .toolbar select{width:auto;min-width:150px;}
+  .count-pill{color:var(--text-faint);font-size:12.5px;margin-bottom:10px;}
+
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);padding:0 10px 10px;font-weight:600;}
+  td{padding:13px 10px;border-top:1px solid var(--line);font-size:14px;vertical-align:middle;}
+  tr:hover td{background:rgba(255,255,255,.015);}
+  .member-name{font-weight:600;}
+  .member-sub{color:var(--text-faint);font-size:12px;margin-top:2px;}
+  .code-chip{display:inline-flex;align-items:center;gap:8px;background:var(--navy-950);border:1px solid var(--navy-600);padding:5px 10px;border-radius:6px;font-family:ui-monospace,Menlo,monospace;font-size:13px;letter-spacing:.04em;}
+  .copy-btn{background:none;border:none;color:var(--text-faint);cursor:pointer;padding:0;font-size:13px;}
+  .copy-btn:hover{color:var(--gold);}
+  .empty{color:var(--text-faint);padding:24px 4px;font-size:14px;}
+  .table-scroll{overflow-x:auto;}
+
+  .link-preview{background:var(--navy-950);border:1px solid var(--navy-600);border-radius:8px;padding:11px 13px;font-size:13.5px;color:var(--text-dim);word-break:break-all;margin-bottom:14px;}
+  .link-preview.empty-state{color:var(--text-faint);font-style:italic;}
+  .hint{font-size:12.5px;color:var(--text-faint);margin-top:6px;line-height:1.5;}
+  .divider{border:none;border-top:1px solid var(--line);margin:26px 0;}
+  .msg{font-size:13.5px;margin-top:10px;min-height:1em;}
+  .msg-good{color:#a9e6c4;}
+  .msg-bad{color:#f3b6b1;}
+
+  .logout-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+  .logout-row .who{color:var(--text-dim);font-size:14px;}
+  .logout-row .who b{color:var(--text);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="mark"><span class="dot"></span><span class="kicker">Kawamangaria Family — Membership Portal</span></div>
+    <h1>Kawamangaria Family</h1>
+    <p>Verify your membership below, or sign in as administrator to manage members and the WhatsApp group.</p>
+  </div>
+
+  <!-- PUBLIC: MEMBER VERIFICATION -->
+  <div class="card">
+    <h2>Check your membership</h2>
+    <div class="sub">Enter your member number and the access code sent to your WhatsApp.</div>
+    <div class="row2">
+      <div class="field">
+        <label>Member number</label>
+        <input id="vNumber" placeholder="e.g. KM-014">
+      </div>
+      <div class="field">
+        <label>Access code</label>
+        <input id="vCode" placeholder="e.g. 7F3KQ2">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="verify()" id="verifyBtn">Check status</button>
+    <div id="result"></div>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div class="card" id="loginCard">
+    <h2>Administrator</h2>
+    <div class="sub">Sign in to manage members, approvals and the group link.</div>
+    <div class="row2">
+      <div class="field">
+        <label>Username</label>
+        <input id="user" placeholder="Username" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="login()" id="loginBtn">Login</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="adminZone">
+    <div class="logout-row">
+      <div class="who">Signed in as <b id="whoName">admin</b></div>
+      <button class="btn-ghost btn-sm" onclick="logout()">Log out</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="add" onclick="showTab('add')">Add member</button>
+      <button class="tab" data-tab="members" onclick="showTab('members')">Members</button>
+      <button class="tab" data-tab="settings" onclick="showTab('settings')">WhatsApp link</button>
+      <button class="tab" data-tab="security" onclick="showTab('security')">Change password</button>
+    </div>
+
+    <!-- ADD MEMBER -->
+    <div class="tabpanel active" id="tab-add">
+      <div class="card">
+        <h2>Add a member</h2>
+        <div class="sub">A random access code is generated automatically. Share it with the member over WhatsApp once they've paid.</div>
+        <div class="row2">
+          <div class="field">
+            <label>Full name</label>
+            <input id="name" placeholder="e.g. Jane Wanjiru">
+          </div>
+          <div class="field">
+            <label>Member number</label>
+            <input id="number" placeholder="e.g. KM-014">
+          </div>
+        </div>
+        <div class="field">
+          <label>WhatsApp number</label>
+          <input id="phone" placeholder="e.g. 254712345678">
+        </div>
+        <button class="btn-primary" onclick="addMember()" id="addBtn">Add member</button>
+        <div id="addMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <!-- MEMBERS TABLE -->
+    <div class="tabpanel" id="tab-members">
+      <div class="card">
+        <h2>All members</h2>
+        <div class="sub">Search, filter and manage every member on file.</div>
+        <div class="toolbar">
+          <div class="field search" style="margin-bottom:0;">
+            <input id="searchBox" placeholder="Search by name, number or phone…" oninput="renderMembers()">
+          </div>
+          <select id="statusFilter" onchange="renderMembers()">
+            <option value="all">All statuses</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+          <button class="btn-ghost btn-sm" onclick="loadAdminData()" id="refreshBtn">Refresh</button>
+        </div>
+        <div class="count-pill" id="countPill"></div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>Member</th><th>Payment</th><th>Access code</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="rows">
+              <tr><td colspan="5" class="empty">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tabpanel" id="tab-settings">
+      <div class="card">
+        <h2>WhatsApp group link</h2>
+        <div class="sub">Approved members see a "Join WhatsApp group" button that opens this link.</div>
+        <div id="linkPreview" class="link-preview empty-state">No link saved yet</div>
+        <div class="field">
+          <label>Group invite link</label>
+          <input id="waLink" placeholder="https://chat.whatsapp.com/…">
+        </div>
+        <button class="btn-primary" onclick="saveLink()" id="saveLinkBtn">Save link</button>
+        <div id="linkMsg" class="msg"></div>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="tabpanel" id="tab-security">
+      <div class="card">
+        <h2>Change password</h2>
+        <div class="sub">Username stays the same — this only updates the password.</div>
+        <div class="field">
+          <label>Current password</label>
+          <input id="oldPass" type="password" autocomplete="current-password">
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>New password</label>
+            <input id="newPass" type="password" autocomplete="new-password">
+          </div>
+          <div class="field">
+            <label>Confirm new password</label>
+            <input id="newPass2" type="password" autocomplete="new-password">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="changePassword()" id="changePassBtn">Update password</button>
+        <div id="passMsg" class="msg"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============ CONFIG ============ */
+const API_URL = "https://script.google.com/macros/s/AKfycbx2VwFagK0rXjrTP4K9OjtjUmuu2jl23Sxb6ZsOfK4f1n0KlDbRp160VJBNvZKHU3OVMw/exec";
+const SESSION_KEY = "kawa_admin_session";
+
+let adminKey = null;   // password, used as the auth token on every admin call
+let adminUser = null;
+let members = [];
+let groupLink = null;
+
+/* ============ API HELPERS ============ */
+async function callApi(payload){
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" }, // avoids CORS preflight on Apps Script
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok) throw new Error("Server returned HTTP " + res.status);
+  return res.json();
+}
+async function getApi(params){
+  const url = new URL(API_URL);
+  Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
+  const res = await fetch(url.toString());
+  if(!res.ok) throw new Error("Server returned HTTP " + res.status);
+  return res.json();
+}
+
+/* ============ PUBLIC: MEMBER VERIFICATION ============ */
+async function verify(){
+  const box = document.getElementById("result");
+  const btn = document.getElementById("verifyBtn");
+  const number = document.getElementById("vNumber").value.trim();
+  const code = document.getElementById("vCode").value.trim();
+  if(!number || !code){
+    box.innerHTML = `<div class="status-box status-bad">Enter both your member number and access code.</div>`;
+    return;
+  }
+  btn.disabled = true; btn.textContent = "Checking…";
+  box.innerHTML = "";
+  try{
+    const res = await callApi({ action:"verify", number, code });
+    if(res.status === "not_found"){
+      box.innerHTML = `<div class="status-box status-bad">We couldn't find a match for that member number and code. Double-check them and try again.</div>`;
+    } else if(res.status === "pending"){
+      box.innerHTML = `<div class="status-box status-pending">Your membership is recorded but not yet approved. Please check back once payment has been confirmed.</div>`;
+    } else if(res.status === "approved"){
+      groupLink = res.link || null;
+      box.innerHTML = `<div class="status-box status-ok">You're approved.<br>
+        <button class="btn-primary join-btn" onclick="joinGroup()">Join WhatsApp group</button></div>`;
+    } else {
+      box.innerHTML = `<div class="status-box status-bad">Something went wrong. Please try again.</div>`;
+    }
+  }catch(e){
+    box.innerHTML = `<div class="status-box status-bad">Couldn't reach the server: ${escapeHtml(e.message)}</div>`;
+  }finally{
+    btn.disabled = false; btn.textContent = "Check status";
+  }
+}
+function joinGroup(){
+  if(groupLink){ window.open(groupLink, "_blank"); }
+}
+
+/* ============ ADMIN: AUTH ============ */
+async function login(){
+  const msg = document.getElementById("loginMsg");
+  const btn = document.getElementById("loginBtn");
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value;
+  if(!u || !p){
+    msg.className = "msg msg-bad"; msg.textContent = "Enter your username and password.";
+    return;
+  }
+  btn.disabled = true;
+  msg.className = "msg"; msg.textContent = "Checking…";
+  try{
+    const res = await callApi({ action:"login", username: u, password: p });
+    if(res.success){
+      enterAdmin(u, p, true);
+    } else {
+      msg.className = "msg msg-bad"; msg.textContent = res.error || "Incorrect username or password.";
+    }
+  }catch(e){
+    msg.className = "msg msg-bad"; msg.textContent = "Couldn't reach the server: " + e.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+function enterAdmin(username, password, remember){
+  adminKey = password;
+  adminUser = username;
+  document.getElementById("whoName").textContent = username;
+  document.getElementById("loginCard").classList.add("hidden");
+  document.getElementById("adminZone").style.display = "block";
+  document.getElementById("loginMsg").textContent = "";
+  if(remember){
+    try{ localStorage.setItem(SESSION_KEY, JSON.stringify({ username, password })); }catch(e){}
+  }
+  loadAdminData();
+}
+
+function logout(){
+  adminKey = null;
+  adminUser = null;
+  members = [];
+  document.getElementById("adminZone").style.display = "none";
+  document.getElementById("loginCard").classList.remove("hidden");
+  document.getElementById("pass").value = "";
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+
+// Session persistence: try to restore a saved login on page load.
+(function restoreSession(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(saved && saved.username && saved.password){
+      enterAdmin(saved.username, saved.password, false);
+    }
+  }catch(e){}
+})();
+
+/* ============ ADMIN: TABS ============ */
+function showTab(name){
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+  document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+}
+
+/* ============ ADMIN: DATA LOAD ============ */
+async function loadAdminData(){
+  const refreshBtn = document.getElementById("refreshBtn");
+  if(refreshBtn){ refreshBtn.disabled = true; refreshBtn.textContent = "Refreshing…"; }
+  document.getElementById("rows").innerHTML = `<tr><td colspan="5" class="empty">Loading…</td></tr>`;
+  try{
+    const res = await getApi({ action:"admin", key: adminKey });
+    if(res.error){
+      if(res.error === "unauthorized"){
+        document.getElementById("loginMsg").className = "msg msg-bad";
+        document.getElementById("loginMsg").textContent = "Your session expired. Please log in again.";
+        logout();
+      } else {
+        document.getElementById("rows").innerHTML =
+          `<tr><td colspan="5" class="empty">Server error: ${escapeHtml(res.message || res.error)}</td></tr>`;
+      }
+      return;
+    }
+    members = res.members || [];
+    renderMembers();
+    const link = res.whatsappLink || "";
+    document.getElementById("waLink").value = link;
+    const preview = document.getElementById("linkPreview");
+    if(link){
+      preview.textContent = link;
+      preview.classList.remove("empty-state");
+    } else {
+      preview.textContent = "No link saved yet";
+      preview.classList.add("empty-state");
+    }
+  }catch(e){
+    document.getElementById("rows").innerHTML =
+      `<tr><td colspan="5" class="empty">Couldn't load members: ${escapeHtml(e.message)}. Check your connection and try Refresh.</td></tr>`;
+  }finally{
+    if(refreshBtn){ refreshBtn.disabled = false; refreshBtn.textContent = "Refresh"; }
+  }
+}
+
+/* ============ ADMIN: MEMBERS TABLE (search + filter) ============ */
+function renderMembers(){
+  const rows = document.getElementById("rows");
+  const countPill = document.getElementById("countPill");
+  const q = (document.getElementById("searchBox").value || "").trim().toLowerCase();
+  const statusFilter = document.getElementById("statusFilter").value;
+
+  let filtered = members.filter(m => {
+    const matchesQuery = !q ||
+      String(m.name).toLowerCase().includes(q) ||
+      String(m.number).toLowerCase().includes(q) ||
+      String(m.phone).toLowerCase().includes(q);
+    const matchesStatus = statusFilter === "all" || m.status === statusFilter;
+    return matchesQuery && matchesStatus;
+  });
+
+  countPill.textContent = members.length
+    ? `Showing ${filtered.length} of ${members.length} member${members.length === 1 ? "" : "s"}`
+    : "";
+
+  if(!members.length){
+    rows.innerHTML = `<tr><td colspan="5" class="empty">No members yet. Add your first member above.</td></tr>`;
+    return;
+  }
+  if(!filtered.length){
+    rows.innerHTML = `<tr><td colspan="5" class="empty">No members match your search or filter.</td></tr>`;
+    return;
+  }
+
+  rows.innerHTML = filtered.map(m => `
+    <tr>
+      <td>
+        <div class="member-name">${escapeHtml(m.name)}</div>
+        <div class="member-sub">${escapeHtml(m.number)}</div>
+      </td>
+      <td>KSh ${m.payment || 200}</td>
+      <td>
+        <span class="code-chip">${escapeHtml(m.code)}
+          <button class="copy-btn" title="Copy code" onclick="copyCode('${escapeAttr(m.code)}')">⧉</button>
+        </span>
+      </td>
+      <td>${statusBadge(m.status)}</td>
+      <td>
+        <div class="actions">
+          ${m.status !== 'approved' ? `<button class="btn-ghost btn-sm" onclick="setStatus('${m.id}','approved')">Approve</button>` : ""}
+          ${m.status !== 'pending' ? `<button class="btn-ghost btn-sm" onclick="setStatus('${m.id}','pending')">Set pending</button>` : ""}
+          ${m.status !== 'rejected' ? `<button class="btn-ghost btn-sm" onclick="setStatus('${m.id}','rejected')">Reject</button>` : ""}
+          ${m.phone ? `<a class="btn-sm btn-wa" style="text-decoration:none;display:inline-block" target="_blank" href="https://wa.me/${encodeURIComponent(m.phone)}?text=${encodeURIComponent('Hello ' + m.name + ', your Kawamangaria Family access code is ' + m.code)}">Send code</a>` : ""}
+          <button class="btn-danger btn-sm" onclick="deleteMember('${m.id}','${escapeAttr(m.name)}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+function statusBadge(status){
+  if(status === 'approved') return `<span class="badge badge-approved">Approved</span>`;
+  if(status === 'rejected') return `<span class="badge badge-rejected">Rejected</span>`;
+  return `<span class="badge badge-pending">Pending</span>`;
+}
+function copyCode(code){
+  navigator.clipboard.writeText(code);
+}
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s){
+  return String(s ?? "").replace(/'/g, "\\'");
+}
+
+/* ============ ADMIN: ADD MEMBER ============ */
+async function addMember(){
+  const msg = document.getElementById("addMsg");
+  const btn = document.getElementById("addBtn");
+  const nameEl = document.getElementById("name");
+  const numberEl = document.getElementById("number");
+  const phoneEl = document.getElementById("phone");
+  if(!nameEl.value.trim() || !numberEl.value.trim() || !phoneEl.value.trim()){
+    msg.className = "msg msg-bad"; msg.textContent = "Fill in name, member number and WhatsApp number.";
+    return;
+  }
+  btn.disabled = true;
+  msg.className = "msg"; msg.textContent = "Saving…";
+  try{
+    const res = await callApi({
+      action:"addMember",
+      key: adminKey,
+      name: nameEl.value.trim(),
+      number: numberEl.value.trim(),
+      phone: phoneEl.value.trim()
+    });
+    if(res.success){
+      msg.className = "msg msg-good"; msg.textContent = `Member added. Access code: ${res.code}`;
+      nameEl.value = ""; numberEl.value = ""; phoneEl.value = "";
+      loadAdminData();
+    } else if(res.error === "unauthorized"){
+      msg.className = "msg msg-bad"; msg.textContent = "Your session expired. Please log in again.";
+      logout();
+    } else {
+      msg.className = "msg msg-bad";
+      msg.textContent = res.message ? `${res.error || "Error"}: ${res.message}` : (res.error || "Couldn't add member.");
+    }
+  }catch(e){
+    msg.className = "msg msg-bad"; msg.textContent = "Couldn't reach the server: " + e.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+
+/* ============ ADMIN: STATUS / DELETE ============ */
+async function setStatus(id, status){
+  try{
+    const res = await callApi({ action:"updateStatus", key: adminKey, id, status });
+    if(res.error === "unauthorized"){ logout(); return; }
+    loadAdminData();
+  }catch(e){
+    alert("Couldn't update status: " + e.message);
+  }
+}
+async function deleteMember(id, name){
+  if(!confirm(`Remove ${name} from the members list? This can't be undone.`)) return;
+  try{
+    const res = await callApi({ action:"deleteMember", key: adminKey, id });
+    if(res.error === "unauthorized"){ logout(); return; }
+    loadAdminData();
+  }catch(e){
+    alert("Couldn't delete member: " + e.message);
+  }
+}
+
+/* ============ ADMIN: SETTINGS ============ */
+async function saveLink(){
+  const msg = document.getElementById("linkMsg");
+  const btn = document.getElementById("saveLinkBtn");
+  const link = document.getElementById("waLink").value.trim();
+  if(!link){ msg.className = "msg msg-bad"; msg.textContent = "Enter a link first."; return; }
+  btn.disabled = true;
+  msg.className = "msg"; msg.textContent = "Saving…";
+  try{
+    const res = await callApi({ action:"saveWhatsappLink", key: adminKey, link });
+    if(res.success){
+      msg.className = "msg msg-good"; msg.textContent = "Group link saved.";
+      loadAdminData();
+    } else if(res.error === "unauthorized"){
+      msg.className = "msg msg-bad"; msg.textContent = "Your session expired. Please log in again.";
+      logout();
+    } else {
+      msg.className = "msg msg-bad"; msg.textContent = res.error || "Couldn't save link.";
+    }
+  }catch(e){
+    msg.className = "msg msg-bad"; msg.textContent = "Couldn't reach the server: " + e.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+async function changePassword(){
+  const msg = document.getElementById("passMsg");
+  const btn = document.getElementById("changePassBtn");
+  const oldPass = document.getElementById("oldPass");
+  const newPass = document.getElementById("newPass");
+  const newPass2 = document.getElementById("newPass2");
+  if(!oldPass.value || !newPass.value){
+    msg.className = "msg msg-bad"; msg.textContent = "Fill in all password fields."; return;
+  }
+  if(newPass.value !== newPass2.value){
+    msg.className = "msg msg-bad"; msg.textContent = "New passwords don't match."; return;
+  }
+  btn.disabled = true;
+  msg.className = "msg"; msg.textContent = "Saving…";
+  try{
+    const res = await callApi({ action:"changePassword", oldPassword: oldPass.value, newPassword: newPass.value });
+    if(res.success){
+      adminKey = newPass.value;
+      try{ localStorage.setItem(SESSION_KEY, JSON.stringify({ username: adminUser, password: adminKey })); }catch(e){}
+      msg.className = "msg msg-good"; msg.textContent = "Password updated.";
+      oldPass.value = ""; newPass.value = ""; newPass2.value = "";
+    } else {
+      msg.className = "msg msg-bad"; msg.textContent = res.error || "Couldn't update password.";
+    }
+  }catch(e){
+    msg.className = "msg msg-bad"; msg.textContent = "Couldn't reach the server: " + e.message;
+  }finally{
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
