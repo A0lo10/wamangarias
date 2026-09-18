@@ -315,7 +315,10 @@ let adminKey = null;   // password, used as the auth token on every admin call
 let adminUser = null;
 let members = [];
 let groupLink = null;
-
+/* Pagination */
+let currentPage = 1;
+let pageSize = 50;
+let totalMembers = 0;
 /* ============ API HELPERS ============ */
 async function callApi(payload){
   const res = await fetch(API_URL, {
@@ -495,6 +498,81 @@ async function setStatus(id,status){
   }
 
 }
+ async function loadAdminData(){
+
+  const refreshBtn =
+    document.getElementById("refreshBtn");
+
+
+  if(refreshBtn){
+
+    refreshBtn.disabled = true;
+
+    refreshBtn.textContent = "Loading...";
+
+  }
+
+
+  try{
+
+
+    const res = await callApi({
+
+      action:"getMembersPage",
+
+      key:adminKey,
+
+      page:currentPage,
+
+      limit:pageSize
+
+    });
+
+
+
+    if(res.error === "unauthorized"){
+
+      logout();
+
+      return;
+
+    }
+
+
+    members = res.members || [];
+
+    totalMembers = res.total || 0;
+
+
+    renderMembers();
+
+
+  }catch(e){
+
+
+    document.getElementById("rows").innerHTML =
+
+    `<tr>
+    <td colspan="5" class="empty">
+    Error loading members: ${e.message}
+    </td>
+    </tr>`;
+
+
+  }finally{
+
+
+    if(refreshBtn){
+
+      refreshBtn.disabled = false;
+
+      refreshBtn.textContent = "Refresh";
+
+    }
+
+  }
+
+} 
 /* ============ ADMIN: MEMBERS TABLE (search + filter) ============ */
 function renderMembers(){
   const rows = document.getElementById("rows");
@@ -663,16 +741,6 @@ async function addMember(){
 
   }
 
-}
-/* ============ ADMIN: STATUS / DELETE ============ */
-async function setStatus(id, status){
-  try{
-    const res = await callApi({ action:"updateStatus", key: adminKey, id, status });
-    if(res.error === "unauthorized"){ logout(); return; }
-    loadAdminData();
-  }catch(e){
-    alert("Couldn't update status: " + e.message);
-  }
 }
 async function deleteMember(id,name){
 
