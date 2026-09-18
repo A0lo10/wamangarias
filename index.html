@@ -240,9 +240,9 @@
         <div class="sub">Search, filter and manage every member on file.</div>
         <div class="toolbar">
           <div class="field search" style="margin-bottom:0;">
-            <input id="searchBox" placeholder="Search by name, number or phone…" oninput="renderMembers()">
+            <input id="searchBox" placeholder="Search by name, number or phone…" oninput="currentPage=1; renderMembers()">
           </div>
-          <select id="statusFilter" onchange="renderMembers()">
+          <select id="statusFilter" onchange="currentPage=1; renderMembers()">
             <option value="all">All statuses</option>
             <option value="approved">Approved</option>
             <option value="pending">Pending</option>
@@ -255,6 +255,7 @@
 <button class="btn-ghost btn-sm" onclick="nextPage()" id="nextBtn">Next →</button>
         </div>
         <div class="count-pill" id="countPill"></div>
+        <div class="count-pill" id="pagePill"></div>
         <div class="table-scroll">
           <table>
             <thead>
@@ -313,6 +314,7 @@
 <script>
 /* ============ CONFIG ============ */
 const API_URL = "https://script.google.com/macros/s/AKfycbx2VwFagK0rXjrTP4K9OjtjUmuu2jl23Sxb6ZsOfK4f1n0KlDbRp160VJBNvZKHU3OVMw/exec";
+const SESSION_KEY = "kawa_admin_session";
 
 let adminKey = null;   // password, used as the auth token on every admin call
 let adminUser = null;
@@ -330,14 +332,24 @@ async function callApi(payload){
     body: JSON.stringify(payload)
   });
   if(!res.ok) throw new Error("Server returned HTTP " + res.status);
-  return res.json();
+  const text = await res.text();
+  try{
+    return JSON.parse(text);
+  }catch(e){
+    throw new Error("The Apps Script returned an invalid response. Redeploy the latest Code.gs version.");
+  }
 }
 async function getApi(params){
   const url = new URL(API_URL);
   Object.keys(params).forEach(k => url.searchParams.set(k, params[k]));
   const res = await fetch(url.toString());
   if(!res.ok) throw new Error("Server returned HTTP " + res.status);
-  return res.json();
+  const text = await res.text();
+  try{
+    return JSON.parse(text);
+  }catch(e){
+    throw new Error("The Apps Script returned an invalid response. Redeploy the latest Code.gs version.");
+  }
 }
 
 /* ============ PUBLIC: MEMBER VERIFICATION ============ */
@@ -389,7 +401,7 @@ async function login(){
   msg.className = "msg"; msg.textContent = "Checking…";
   try{
     const res = await callApi({ action:"login", username: u, password: p });
-    if(res.success){
+    if(res && res.success){
       enterAdmin(u, p, true);
     } else {
       msg.className = "msg msg-bad"; msg.textContent = res.error || "Incorrect username or password.";
@@ -418,6 +430,8 @@ function logout(){
   adminKey = null;
   adminUser = null;
   members = [];
+  currentPage = 1;
+  totalMembers = 0;
   document.getElementById("adminZone").style.display = "none";
   document.getElementById("loginCard").classList.remove("hidden");
   document.getElementById("pass").value = "";
@@ -903,7 +917,7 @@ async function saveLink(){
       "Couldn't reach the server: " + e.message;
 
 
-    }finally{
+  }finally{
 
 
     btn.disabled = false;
@@ -913,8 +927,6 @@ async function saveLink(){
 
 }
 
-
-async function changePassword(){
 async function changePassword(){
   const msg = document.getElementById("passMsg");
   const btn = document.getElementById("changePassBtn");
@@ -994,6 +1006,21 @@ function updatePagination(){
 
     nextBtn.disabled =
       currentPage * pageSize >= totalMembers;
+
+  }
+
+  const pagePill =
+    document.getElementById("pagePill");
+
+  if(pagePill){
+
+    const totalPages =
+      Math.max(1, Math.ceil(totalMembers / pageSize));
+
+    pagePill.textContent =
+      totalMembers
+        ? `Page ${currentPage} of ${totalPages}`
+        : "";
 
   }
 
