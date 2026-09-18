@@ -313,7 +313,6 @@
 <script>
 /* ============ CONFIG ============ */
 const API_URL = "https://script.google.com/macros/s/AKfycbx2VwFagK0rXjrTP4K9OjtjUmuu2jl23Sxb6ZsOfK4f1n0KlDbRp160VJBNvZKHU3OVMw/exec";
-const SESSION_KEY = "kawa_admin_session";
 
 let adminKey = null;   // password, used as the auth token on every admin call
 let adminUser = null;
@@ -904,7 +903,7 @@ async function saveLink(){
       "Couldn't reach the server: " + e.message;
 
 
-  }finally{
+    }finally{
 
 
     btn.disabled = false;
@@ -913,7 +912,9 @@ async function saveLink(){
   }
 
 }
-}
+
+
+async function changePassword(){
 async function changePassword(){
   const msg = document.getElementById("passMsg");
   const btn = document.getElementById("changePassBtn");
