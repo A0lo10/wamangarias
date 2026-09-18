@@ -438,43 +438,63 @@ function showTab(name){
 }
 
 /* ============ ADMIN: DATA LOAD ============ */
-async function loadAdminData(){
-  const refreshBtn = document.getElementById("refreshBtn");
-  if(refreshBtn){ refreshBtn.disabled = true; refreshBtn.textContent = "Refreshing…"; }
-  document.getElementById("rows").innerHTML = `<tr><td colspan="5" class="empty">Loading…</td></tr>`;
-  try{
-    const res = await getApi({ action:"admin", key: adminKey });
-    if(res.error){
-      if(res.error === "unauthorized"){
-        document.getElementById("loginMsg").className = "msg msg-bad";
-        document.getElementById("loginMsg").textContent = "Your session expired. Please log in again.";
-        logout();
-      } else {
-        document.getElementById("rows").innerHTML =
-          `<tr><td colspan="5" class="empty">Server error: ${escapeHtml(res.message || res.error)}</td></tr>`;
-      }
-      return;
-    }
-    members = res.members || [];
-    renderMembers();
-    const link = res.whatsappLink || "";
-    document.getElementById("waLink").value = link;
-    const preview = document.getElementById("linkPreview");
-    if(link){
-      preview.textContent = link;
-      preview.classList.remove("empty-state");
-    } else {
-      preview.textContent = "No link saved yet";
-      preview.classList.add("empty-state");
-    }
-  }catch(e){
-    document.getElementById("rows").innerHTML =
-      `<tr><td colspan="5" class="empty">Couldn't load members: ${escapeHtml(e.message)}. Check your connection and try Refresh.</td></tr>`;
-  }finally{
-    if(refreshBtn){ refreshBtn.disabled = false; refreshBtn.textContent = "Refresh"; }
-  }
-}
+async function setStatus(id,status){
 
+  try{
+
+
+    const res = await callApi({
+
+      action:"updateStatus",
+
+      key:adminKey,
+
+      id,
+
+      status
+
+    });
+
+
+    if(res.success){
+
+
+      const member =
+        members.find(
+          m => m.id === id
+        );
+
+
+      if(member){
+
+        member.status=status;
+
+      }
+
+
+      renderMembers();
+
+
+    }
+
+
+    else if(res.error==="unauthorized"){
+
+      logout();
+
+    }
+
+
+  }catch(e){
+
+    alert(
+      "Couldn't update status: "
+      + e.message
+    );
+
+  }
+
+}
 /* ============ ADMIN: MEMBERS TABLE (search + filter) ============ */
 function renderMembers(){
   const rows = document.getElementById("rows");
@@ -546,43 +566,104 @@ function escapeAttr(s){
 
 /* ============ ADMIN: ADD MEMBER ============ */
 async function addMember(){
+
   const msg = document.getElementById("addMsg");
   const btn = document.getElementById("addBtn");
+
   const nameEl = document.getElementById("name");
   const numberEl = document.getElementById("number");
   const phoneEl = document.getElementById("phone");
-  if(!nameEl.value.trim() || !numberEl.value.trim() || !phoneEl.value.trim()){
-    msg.className = "msg msg-bad"; msg.textContent = "Fill in name, member number and WhatsApp number.";
-    return;
-  }
-  btn.disabled = true;
-  msg.className = "msg"; msg.textContent = "Saving…";
-  try{
-    const res = await callApi({
-      action:"addMember",
-      key: adminKey,
-      name: nameEl.value.trim(),
-      number: numberEl.value.trim(),
-      phone: phoneEl.value.trim()
-    });
-    if(res.success){
-      msg.className = "msg msg-good"; msg.textContent = `Member added. Access code: ${res.code}`;
-      nameEl.value = ""; numberEl.value = ""; phoneEl.value = "";
-      loadAdminData();
-    } else if(res.error === "unauthorized"){
-      msg.className = "msg msg-bad"; msg.textContent = "Your session expired. Please log in again.";
-      logout();
-    } else {
-      msg.className = "msg msg-bad";
-      msg.textContent = res.message ? `${res.error || "Error"}: ${res.message}` : (res.error || "Couldn't add member.");
-    }
-  }catch(e){
-    msg.className = "msg msg-bad"; msg.textContent = "Couldn't reach the server: " + e.message;
-  }finally{
-    btn.disabled = false;
-  }
-}
 
+
+  if(
+    !nameEl.value.trim() ||
+    !numberEl.value.trim() ||
+    !phoneEl.value.trim()
+  ){
+
+    msg.className="msg msg-bad";
+    msg.textContent =
+      "Fill in name, member number and WhatsApp number.";
+
+    return;
+
+  }
+
+
+  btn.disabled=true;
+  msg.textContent="Saving...";
+
+
+  try{
+
+    const res = await callApi({
+
+      action:"addMember",
+
+      key:adminKey,
+
+      name:nameEl.value.trim(),
+
+      number:numberEl.value.trim(),
+
+      phone:phoneEl.value.trim()
+
+    });
+
+
+    if(res.success){
+
+
+      /*
+       Add directly to local table.
+       No complete reload.
+      */
+
+      members.unshift(res.member);
+
+
+      renderMembers();
+
+
+      msg.className="msg msg-good";
+
+      msg.textContent =
+        "Member added. Access code: " + res.code;
+
+
+      nameEl.value="";
+      numberEl.value="";
+      phoneEl.value="";
+
+
+    }else{
+
+
+      msg.className="msg msg-bad";
+
+      msg.textContent =
+        res.message || res.error;
+
+
+    }
+
+
+  }catch(e){
+
+
+    msg.className="msg msg-bad";
+
+    msg.textContent =
+      "Error: " + e.message;
+
+
+  }finally{
+
+    btn.disabled=false;
+
+  }
+
+}
 /* ============ ADMIN: STATUS / DELETE ============ */
 async function setStatus(id, status){
   try{
@@ -593,17 +674,71 @@ async function setStatus(id, status){
     alert("Couldn't update status: " + e.message);
   }
 }
-async function deleteMember(id, name){
-  if(!confirm(`Remove ${name} from the members list? This can't be undone.`)) return;
-  try{
-    const res = await callApi({ action:"deleteMember", key: adminKey, id });
-    if(res.error === "unauthorized"){ logout(); return; }
-    loadAdminData();
-  }catch(e){
-    alert("Couldn't delete member: " + e.message);
-  }
-}
+async function deleteMember(id,name){
 
+
+  if(
+    !confirm(
+      `Remove ${name} from members?`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  try{
+
+
+    const res = await callApi({
+
+      action:"deleteMember",
+
+      key:adminKey,
+
+      id
+
+    });
+
+
+
+    if(res.success){
+
+
+      members =
+        members.filter(
+          m => m.id !== id
+        );
+
+
+      renderMembers();
+
+
+    }
+
+
+    else if(res.error==="unauthorized"){
+
+      logout();
+
+    }
+
+
+
+  }catch(e){
+
+
+    alert(
+      "Couldn't delete member: "
+      + e.message
+    );
+
+
+  }
+
+
+}
 /* ============ ADMIN: SETTINGS ============ */
 async function saveLink(){
   const msg = document.getElementById("linkMsg");
