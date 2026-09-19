@@ -637,7 +637,7 @@ function renderMembers(){
           ${m.status !== 'approved' ? `<button class="btn-ghost btn-sm" onclick="setStatus('${m.id}','approved')">Approve</button>` : ""}
           ${m.status !== 'pending' ? `<button class="btn-ghost btn-sm" onclick="setStatus('${m.id}','pending')">Set pending</button>` : ""}
           ${m.status !== 'rejected' ? `<button class="btn-ghost btn-sm" onclick="setStatus('${m.id}','rejected')">Reject</button>` : ""}
-          ${m.phone ? `<a class="btn-sm btn-wa" style="text-decoration:none;display:inline-block" target="_blank" href="https://wa.me/${encodeURIComponent(m.phone)}?text=${encodeURIComponent('Hello ' + m.name + ', your Kawamangaria Family access code is ' + m.code)}">Send code</a>` : ""}
+          ${m.phone ? `<a class="btn-sm btn-wa" style="text-decoration:none;display:inline-block" target="_blank" href="https://wa.me/${encodeURIComponent(m.phone)}?text=${encodeURIComponent('Hello ' + m.name + ', get your members number on the wall.Your New Kawamangaria Family access code is ' + m.code)}">Send code</a>` : ""}
           <button class="btn-danger btn-sm" onclick="deleteMember('${m.id}','${escapeAttr(m.name)}')">Delete</button>
         </div>
       </td>
